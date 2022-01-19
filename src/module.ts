@@ -138,25 +138,3 @@ export class WebAssemblyModule {
 		return block(this.instance)
 	}
 }
-
-export async function fetchModule(path: string): Promise<Uint8Array> {
-	if (typeof fetch === "undefined") {
-		throw new TypeError(`Fetch API is not supported in this environment.`)
-	}
-
-	const response = await fetch(path)
-	const bytes = new Uint8Array(await response.arrayBuffer())
-
-	return bytes
-}
-
-export async function instantiateModule(data: Uint8Array): Promise<WebAssemblyModule> {
-	if (typeof WebAssembly === "undefined") {
-		throw new TypeError(`WebAssembly API is not supported in this environment.`)
-	}
-
-	const module = new WebAssemblyModule()
-	await module.load(data)
-
-	return module
-}

@@ -1,5 +1,6 @@
 import { WASI } from "@wasmer/wasi"
 import { WasmFs } from "@wasmer/wasmfs"
+import { bindWriteSyncOverride } from "~/module-write-override"
 import { deinitializeUInt32InMemory, initializeStringInMemory, initializeUInt32InMemory, MemoryAddress } from "./memory-access"
 import { callModuleFunction, callModuleFunctionWithArgument } from "./module-functions"
 
@@ -41,28 +42,15 @@ export class WebAssemblyModule {
 	}
 
 	private initOutputRedirect(): void {
-		const textDecoder = new TextDecoder()
-		const wasmFsWriteSync = this.wasmFs.fs.writeSync
-
-		// @ts-ignore
-		this.wasmFs.fs.writeSync = (identifier: number, buffer: any, offset?: number, length?: number, position?: number): number => {
-			const forward = () => wasmFsWriteSync(identifier, buffer, offset, length, position)
-			const text = textDecoder.decode(buffer)
-
-			if (text === "\n") {
-				return forward()
+		this.wasmFs.fs.writeSync = bindWriteSyncOverride(
+			this.wasmFs.fs.writeSync,
+			output => {
+				this.outputBuffer.push(output)
+			},
+			error => {
+				console.error(`Non-standard output: ${error}`)
 			}
-
-			switch (identifier) {
-				case 1:
-					this.outputBuffer.push(text)
-					break
-				default:
-					console.error(`Non-standard output: ${text}`)
-			}
-
-			return forward()
-		}
+		) as typeof this.wasmFs.fs.writeSync
 	}
 
 	async load(data: Uint8Array) {

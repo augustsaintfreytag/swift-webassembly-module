@@ -3,12 +3,17 @@ import { WasmFs } from "@wasmer/wasmfs"
 import { deinitializeUInt32InMemory, initializeStringInMemory, initializeUInt32InMemory, MemoryAddress } from "./memory-access"
 import { callModuleFunction, callModuleFunctionWithArgument } from "./module-functions"
 
+const Memory = WebAssembly.Memory
+
+type Instance = WebAssembly.Instance
+type MemoryDescriptor = WebAssembly.MemoryDescriptor
+
 export class WebAssemblyModule {
 	private static get defaultMemorySize(): number {
 		return 128
 	}
 
-	private static get defaultMemoryDescriptor(): WebAssembly.MemoryDescriptor {
+	private static get defaultMemoryDescriptor(): MemoryDescriptor {
 		return { initial: this.defaultMemorySize, maximum: this.defaultMemorySize }
 	}
 
@@ -16,11 +21,11 @@ export class WebAssemblyModule {
 	private wasmFs: WasmFs
 	private outputBuffer: string[] = []
 
-	public instance: WebAssembly.Instance | undefined
+	public instance: Instance | undefined
 
 	// Init
 
-	constructor() {
+	constructor(memory: MemoryDescriptor = WebAssemblyModule.defaultMemoryDescriptor) {
 		this.wasmFs = new WasmFs()
 		this.wasi = new WASI({
 			args: [],
@@ -31,7 +36,7 @@ export class WebAssemblyModule {
 			}
 		})
 
-		this.wasi.memory = new WebAssembly.Memory(WebAssemblyModule.defaultMemoryDescriptor)
+		this.wasi.memory = new Memory(memory)
 		this.initOutputRedirect()
 	}
 
@@ -130,7 +135,7 @@ export class WebAssemblyModule {
 
 	// Utility
 
-	withInstance<ReturnType>(block: (instance: WebAssembly.Instance) => ReturnType): ReturnType {
+	withInstance<ReturnType>(block: (instance: Instance) => ReturnType): ReturnType {
 		if (!this.instance) {
 			throw new TypeError(`Can not call WebAssembly module function without loaded instance.`)
 		}

@@ -53,6 +53,8 @@ export class WebAssemblyModule {
 		) as typeof this.wasmFs.fs.writeSync
 	}
 
+	// Load
+
 	async load(data: Uint8Array) {
 		const { instance } = await WebAssembly.instantiate(data, {
 			wasi_snapshot_preview1: this.wasi.wasiImport

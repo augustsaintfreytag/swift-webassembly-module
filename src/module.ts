@@ -1,7 +1,7 @@
 import { WASI } from "@wasmer/wasi"
 import { WasmFs } from "@wasmer/wasmfs"
 import { bindWriteSyncOverride } from "~/module-write-override"
-import { deinitializeUInt32InMemory, initializeStringInMemory, initializeUInt32InMemory, MemoryAddress } from "./memory-access"
+import { assertMemoryFunctions, deinitializeUInt32InMemory, initializeStringInMemory, initializeUInt32InMemory, MemoryAddress } from "./memory-access"
 import { callModuleFunction, callModuleFunctionWithArgument } from "./module-functions"
 
 const Memory = WebAssembly.Memory
@@ -106,6 +106,10 @@ export class WebAssemblyModule {
 	}
 
 	// Memory
+
+	assertMemory() {
+		this.withInstance(instance => assertMemoryFunctions(instance))
+	}
 
 	async initializeNumericalValue(value: number): Promise<MemoryAddress> {
 		return this.withInstance(async instance => initializeUInt32InMemory(instance, value))

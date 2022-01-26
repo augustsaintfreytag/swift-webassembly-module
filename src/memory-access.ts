@@ -2,9 +2,25 @@ import { callModuleFunction, callModuleFunctionWithArgument } from "./module-fun
 
 export type MemoryAddress = number
 
+const memoryFunctionIdentifiers = ["initializeUInt32InMemory", "deinitializeUInt32InMemory", "initializeStringInMemory", "deinitializeStringInMemory"]
+
+// Memory Reference
+
 export function instanceMemory(instance: WebAssembly.Instance): WebAssembly.Memory {
 	return instance.exports.memory as WebAssembly.Memory
 }
+
+// Module Assertion
+
+export function assertMemoryFunctions(instance: WebAssembly.Instance) {
+	for (const identifier of memoryFunctionIdentifiers) {
+		if (typeof instance.exports[identifier] !== "function") {
+			throw Error(`Module is missing critical memory management functions.`)
+		}
+	}
+}
+
+// Memory Management
 
 export async function initializeUInt32InMemory(instance: WebAssembly.Instance, value: number): Promise<MemoryAddress> {
 	const address = await callModuleFunction<MemoryAddress>(instance, "allocateMemoryForUInt32")

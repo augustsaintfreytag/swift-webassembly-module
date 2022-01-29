@@ -1,5 +1,7 @@
 // Library
 
+import { ModuleError, ModuleInterfaceError } from "./module-error"
+
 export type FunctionType<ReturnType> = () => ReturnType
 export type FunctionTypeWithArgument<ReturnType, ArgumentType> = (argument: ArgumentType) => ReturnType
 
@@ -9,7 +11,7 @@ export function exportedFunctionFromModule<FunctionType extends Function>(instan
 	const exportedFunction = instance.exports[name]
 
 	if (typeof exportedFunction !== "function") {
-		throw new TypeError(`WASM module does not export function named '${name}'.`)
+		throw new ModuleInterfaceError(`WASM module does not export function named '${name}'.`)
 	}
 
 	return exportedFunction as FunctionType
@@ -20,7 +22,7 @@ export async function callModuleFunction<ReturnType>(instance: WebAssembly.Insta
 		const exportedFunction = exportedFunctionFromModule<FunctionType<ReturnType>>(instance, name)
 		return exportedFunction()
 	} catch (error) {
-		throw new TypeError(`Could not run exported function '${name}' in WASM module. ${error}`)
+		throw new ModuleInterfaceError(`Could not run exported function '${name}' in WASM module. ${error}`)
 	}
 }
 
@@ -33,6 +35,6 @@ export async function callModuleFunctionWithArgument<ReturnType, ArgumentType>(
 		const exportedFunction = exportedFunctionFromModule<FunctionTypeWithArgument<ReturnType, ArgumentType>>(instance, name)
 		return exportedFunction(argument)
 	} catch (error) {
-		throw new TypeError(`Could not run exported function '${name}' in WASM module. ${error}`)
+		throw new ModuleInterfaceError(`Could not run exported function '${name}' in WASM module. ${error}`)
 	}
 }

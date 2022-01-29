@@ -131,7 +131,7 @@ export class WebAssemblyModule {
 
 	withInstance<ReturnType>(block: (instance: Instance) => ReturnType): ReturnType {
 		if (!this.instance) {
-			throw new TypeError(`Can not call WebAssembly module function without loaded instance.`)
+			throw new ModuleStateError(`Can not provide WebAssembly module, missing loaded instance.`)
 		}
 
 		return block(this.instance)

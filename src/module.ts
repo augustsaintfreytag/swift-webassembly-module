@@ -2,6 +2,7 @@ import { WASI } from "@wasmer/wasi"
 import { WasmFs } from "@wasmer/wasmfs"
 import { bindWriteSyncOverride } from "~/module-write-override"
 import { assertMemoryFunctions, deinitializeUInt32InMemory, initializeStringInMemory, initializeUInt32InMemory, MemoryAddress } from "./memory-access"
+import { ModuleStateError } from "./module-error"
 import { callModuleFunction, callModuleFunctionWithArgument } from "./module-functions"
 
 const Memory = WebAssembly.Memory
@@ -23,6 +24,7 @@ export class WebAssemblyModule {
 	private outputBuffer: string[] = []
 
 	public instance: Instance | undefined
+	public isBusy: boolean = false
 
 	// Init
 
@@ -67,15 +69,15 @@ export class WebAssemblyModule {
 	// Calls
 
 	async callFunction<ReturnType>(name: string): Promise<ReturnType> {
-		return this.withInstance(instance => callModuleFunction<ReturnType>(instance, name))
+		return this.withLockingInstance(instance => callModuleFunction<ReturnType>(instance, name))
 	}
 
 	async callFunctionWithArgument<ReturnType, ArgumentType>(name: string, argument: ArgumentType): Promise<ReturnType> {
-		return this.withInstance(instance => callModuleFunctionWithArgument<ReturnType, ArgumentType>(instance, name, argument))
+		return this.withLockingInstance(instance => callModuleFunctionWithArgument<ReturnType, ArgumentType>(instance, name, argument))
 	}
 
 	async callStreamingFunction<ReturnType>(name: string): Promise<string | undefined> {
-		return this.withInstance(async instance => {
+		return this.withLockingInstance(async instance => {
 			this.clearOutput()
 			await callModuleFunction<ReturnType>(instance, name)
 
@@ -84,7 +86,7 @@ export class WebAssemblyModule {
 	}
 
 	async callStreamingFunctionWithArgument<ReturnType, ArgumentType>(name: string, argument: ArgumentType): Promise<string | undefined> {
-		return this.withInstance(async instance => {
+		return this.withLockingInstance(async instance => {
 			this.clearOutput()
 			await callModuleFunctionWithArgument<ReturnType, ArgumentType>(instance, name, argument)
 
@@ -112,28 +114,44 @@ export class WebAssemblyModule {
 	}
 
 	async initializeNumericalValue(value: number): Promise<MemoryAddress> {
-		return this.withInstance(async instance => initializeUInt32InMemory(instance, value))
+		return this.withLockingInstance(instance => initializeUInt32InMemory(instance, value))
 	}
 
 	async deinitializeNumericalValue(address: MemoryAddress) {
-		this.withInstance(async instance => deinitializeUInt32InMemory(instance, address))
+		this.withLockingInstance(instance => deinitializeUInt32InMemory(instance, address))
 	}
 
 	async initializeStringValue(value: string): Promise<MemoryAddress> {
-		return this.withInstance(async instance => initializeStringInMemory(instance, value))
+		return this.withLockingInstance(instance => initializeStringInMemory(instance, value))
 	}
 
 	async deinitializeStringValue(address: MemoryAddress) {
-		this.withInstance(async instance => deinitializeUInt32InMemory(instance, address))
+		this.withLockingInstance(instance => deinitializeUInt32InMemory(instance, address))
 	}
 
 	// Utility
 
-	withInstance<ReturnType>(block: (instance: Instance) => ReturnType): ReturnType {
+	async withInstance<ReturnType>(block: (instance: Instance) => ReturnType): Promise<ReturnType> {
 		if (!this.instance) {
 			throw new ModuleStateError(`Can not provide WebAssembly module, missing loaded instance.`)
 		}
 
 		return block(this.instance)
+	}
+
+	async withLockingInstance<ReturnType>(block: (instance: Instance) => Promise<ReturnType>): Promise<ReturnType> {
+		if (!this.instance) {
+			throw new ModuleStateError(`Can not provide WebAssembly module, missing loaded instance.`)
+		}
+
+		if (this.isBusy) {
+			throw new ModuleStateError(`Can not lock WebAssembly module, already locked.`)
+		}
+
+		this.isBusy = true
+		const returnValue = await block(this.instance)
+		this.isBusy = false
+
+		return returnValue
 	}
 }

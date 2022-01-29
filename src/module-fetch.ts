@@ -1,8 +1,10 @@
+import { ModuleEnvironmentError } from "./module-error"
+
 export type ModuleData = Uint8Array
 
 export async function fetchWebAssemblyModuleData(path: string): Promise<ModuleData> {
 	if (typeof fetch === "undefined") {
-		throw new TypeError(`Fetch API is not supported in this environment.`)
+		throw new ModuleEnvironmentError(`Fetch API is not supported in this environment.`)
 	}
 
 	const response = await fetch(path)

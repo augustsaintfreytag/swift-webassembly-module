@@ -1,28 +1,30 @@
 #! /usr/bin/env sh
 
-PROJECT_PATH=$(pwd)
-PROJECT_DIR=$(basename "$PROJECT_PATH")
-TMP_PATH="/var/tmp/$PROJECT_DIR"
+SCRIPT_DIR=$(dirname "$0")
+PROJECT_DIR=$(realpath "$SCRIPT_DIR/..")
+PROJECT_NAME=$(basename "$PROJECT_DIR")
+TMP_DIR="/var/tmp/$PROJECT_NAME"
 
-if [ ! -e ./package.json ]; then
-	echo "Working directory '$PROJECT_PATH' is not a valid project directory."
+if [ ! -e ./package.json ]
+then
+	echo "Working directory '$PROJECT_DIR' is not a valid project directory."
 	exit 1
 fi
 
-echo "Copying project data to temporary working directory '$TMP_PATH'."
-mkdir -p "$TMP_PATH"
+echo "Copying project data to temporary working directory '$TMP_DIR'."
+mkdir -p "$TMP_DIR"
 
-# cp -R "$PROJECT_PATH" "$TMP_PATH/"
-touch "$TMP_PATH/.development"
-cp package.json "$TMP_PATH/"
-cp yarn.lock "$TMP_PATH/"
-cp tsconfig.json "$TMP_PATH/"
-cp -R src "$TMP_PATH/"
+touch "$TMP_DIR/.development"
+cp package.json "$TMP_DIR/"
+cp yarn.lock "$TMP_DIR/"
+cp tsconfig.json "$TMP_DIR/"
+cp -R src "$TMP_DIR/"
 
-cd "$TMP_PATH"
+cd "$TMP_DIR" || exit 1
 
-if [ ! -e ./package.json ]; then
-	echo "Working directory '$TMP_PATH' is not a valid project directory, copy incomplete."
+if [ ! -e ./package.json ]
+then
+	echo "Working directory '$TMP_DIR' is not a valid project directory, copy incomplete."
 	exit 1
 fi
 
@@ -33,7 +35,7 @@ echo "Building project."
 yarn build
 
 echo "Copying output project distribution files."
-rm -r "$PROJECT_PATH/dist"
-cp -R "$TMP_PATH/dist" "$PROJECT_PATH/"
+rm -r "$PROJECT_DIR/dist" > /dev/null
+cp -R "$TMP_DIR/dist" "$PROJECT_DIR/"
 
-rm -r "$TMP_PATH"
+rm -r "$TMP_DIR"

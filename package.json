@@ -24,6 +24,6 @@
 		"build-deferred": "scripts/build-deferred.sh",
 		"build-clean": "rm -r dist/* & exit 0",
 		"build-sources": "ttsc",
-		"postinstall": "if [ ! -e .development ]; then yarn run build-deferred; fi"
+		"postinstall": "stat .development && yarn run build-deferred; true"
 	}
 }

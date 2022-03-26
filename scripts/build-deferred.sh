@@ -11,7 +11,7 @@ then
 	exit 1
 fi
 
-echo "Copying project data to temporary working directory '$TMP_DIR'."
+echo "Copying project data to temporary working directory '$TMP_DIR' for deferred build."
 mkdir -p "$TMP_DIR"
 
 touch "$TMP_DIR/.development"
@@ -28,14 +28,14 @@ then
 	exit 1
 fi
 
-echo "Installing project development dependencies for build."
+echo "Installing project development dependencies for deferred build."
 yarn
 
-echo "Building project."
+echo "Building project in temporary directory."
 yarn build
 
-echo "Copying output project distribution files."
-rm -r "$PROJECT_DIR/dist" > /dev/null
+echo "Copying output project distribution files from deferred build."
+rm -r "$PROJECT_DIR/dist" &> /dev/null
 cp -R "$TMP_DIR/dist" "$PROJECT_DIR/"
 
 rm -r "$TMP_DIR"

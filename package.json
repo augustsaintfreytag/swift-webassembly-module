@@ -21,10 +21,13 @@
 	},
 	"packageManager": "yarn@3.2.0",
 	"scripts": {
-		"build": "yarn run build-clean & yarn run build-sources",
+		"build": "$npm_execpath run build-clean & $npm_execpath run build-sources",
 		"build-deferred": "scripts/build-deferred.sh",
-		"build-clean": "rm -r dist/* & exit 0",
+		"build-clean": "rm -r dist/* || true",
 		"build-sources": "ttsc",
-		"postinstall": "stat .development && yarn run build-deferred; true"
-	}
+		"prepack": "$npm_execpath run build-deferred || true"
+	},
+	"files": [
+		"dist"
+	]
 }

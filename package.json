@@ -25,7 +25,8 @@
 		"build-deferred": "scripts/build-deferred.sh",
 		"build-clean": "rm -r dist/* || true",
 		"build-sources": "ttsc",
-		"prepack": "$npm_execpath run build-deferred || true"
+		"postinstall": "scripts/postinstall.sh",
+		"prepack": "$npm_execpath run build-deferred"
 	},
 	"files": [
 		"dist"

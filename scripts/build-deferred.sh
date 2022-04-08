@@ -29,7 +29,7 @@ then
 fi
 
 echo "Installing project development dependencies for deferred build."
-yarn
+yarn install
 
 echo "Building project in temporary directory."
 yarn build

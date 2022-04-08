@@ -21,11 +21,11 @@
 	},
 	"scripts": {
 		"build": "$npm_execpath run build-clean & $npm_execpath run build-sources",
-		"build-deferred": "scripts/build-deferred.sh",
+		"build-deferred": "./scripts/build-deferred.sh",
 		"build-clean": "rm -r dist/* || true",
 		"build-sources": "ttsc",
-		"postinstall": "scripts/postinstall.sh",
-		"prepack": "$npm_execpath run build-deferred"
+		"postinstall": "./scripts/postinstall.sh",
+		"prepack": "./scripts/build-deferred.sh"
 	},
 	"files": [
 		"dist"

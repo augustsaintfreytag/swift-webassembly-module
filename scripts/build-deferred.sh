@@ -35,7 +35,7 @@ echo "Building project in temporary directory."
 yarn build
 
 echo "Copying output project distribution files from deferred build."
-rm -r "$PROJECT_DIR/dist" &> /dev/null
+rm -r "$PROJECT_DIR/dist/*" &> /dev/null
 cp -R "$TMP_DIR/dist" "$PROJECT_DIR/"
 
 rm -r "$TMP_DIR"

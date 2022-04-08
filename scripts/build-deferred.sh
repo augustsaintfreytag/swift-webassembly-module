@@ -5,7 +5,7 @@ PROJECT_DIR=$(realpath "$SCRIPT_DIR/..")
 PROJECT_NAME=$(basename "$PROJECT_DIR")
 TMP_DIR="/var/tmp/$PROJECT_NAME"
 
-cd "$PROJECT_DIR" || exit 1
+cd "$PROJECT_DIR" || (echo "Could not change to project directory '$PROJECT_DIR'." && exit 1)
 
 if [ ! -e ./package.json ]
 then
@@ -23,7 +23,7 @@ cp tsconfig.json "$TMP_DIR/"
 cp -R src "$TMP_DIR/"
 touch "$TMP_DIR/.development"
 
-cd "$TMP_DIR" || exit 1
+cd "$TMP_DIR" || (echo "Could not change to temporary directory '$TMP_DIR'." && exit 1)
 
 if [ ! -e ./package.json ]
 then
@@ -32,6 +32,7 @@ then
 fi
 
 echo "Installing $PROJECT_NAME project development dependencies for deferred build."
+yarn --update-checksums
 yarn install --production=false
 
 echo "Building $PROJECT_NAME project in temporary directory."

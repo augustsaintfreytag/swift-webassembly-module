@@ -5,13 +5,15 @@ PROJECT_DIR=$(realpath "$SCRIPT_DIR/..")
 PROJECT_NAME=$(basename "$PROJECT_DIR")
 TMP_DIR="/var/tmp/$PROJECT_NAME"
 
+cd "$PROJECT_DIR" || exit 1
+
 if [ ! -e ./package.json ]
 then
 	echo "Working directory '$PROJECT_DIR' is not a valid project directory."
 	exit 1
 fi
 
-echo "Copying project data to temporary working directory '$TMP_DIR' for deferred build."
+echo "Copying project data for $PROJECT_NAME to temporary working directory '$TMP_DIR' for deferred build."
 mkdir -p "$TMP_DIR"
 
 touch "$TMP_DIR/.development"
@@ -25,18 +27,18 @@ cd "$TMP_DIR" || exit 1
 
 if [ ! -e ./package.json ]
 then
-	echo "Working directory '$TMP_DIR' is not a valid project directory, copy incomplete."
+	echo "Working directory '$TMP_DIR' for $PROJECT_NAME is not a valid project directory, copy incomplete."
 	exit 1
 fi
 
-echo "Installing project development dependencies for deferred build."
-yarn install
+echo "Installing $PROJECT_NAME project development dependencies for deferred build."
+yarn install --production=false
 
-echo "Building project in temporary directory."
+echo "Building $PROJECT_NAME project in temporary directory."
 yarn build
 
-echo "Copying output project distribution files from deferred build."
-rm -r "$PROJECT_DIR/dist/*" &> /dev/null
+echo "Copying $PROJECT_NAME output project distribution files from deferred build."
+rm -r "$PROJECT_DIR/dist/*" || true
 cp -R "$TMP_DIR/dist" "$PROJECT_DIR/"
 
 rm -r "$TMP_DIR"

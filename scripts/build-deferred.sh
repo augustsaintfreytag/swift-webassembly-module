@@ -19,6 +19,7 @@ cp package.json "$TMP_DIR/"
 cp yarn.lock "$TMP_DIR/"
 cp tsconfig.json "$TMP_DIR/"
 cp -R src "$TMP_DIR/"
+touch "$TMP_DIR/.development"
 
 cd "$TMP_DIR" || exit 1
 

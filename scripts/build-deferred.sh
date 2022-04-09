@@ -20,6 +20,7 @@ touch "$TMP_DIR/.development"
 cp package.json "$TMP_DIR/"
 cp yarn.lock "$TMP_DIR/"
 cp tsconfig.json "$TMP_DIR/"
+cp -R scripts "$TMP_DIR/"
 cp -R src "$TMP_DIR/"
 touch "$TMP_DIR/.development"
 
